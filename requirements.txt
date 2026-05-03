@@ -1,1 +1,12 @@
-{\rtf1}
+streamlit
+fpdf
+Pillow
+docx
+python-docx
+pdf2image
+PyPDF2  
+pdfplumber
+pdfminer.six
+data
+pandas
+numpy
