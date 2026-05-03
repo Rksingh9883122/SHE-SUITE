@@ -1,68 +1,215 @@
 import streamlit as st
+from fpdf import FPDF
+from docx import Document
+import data
+import os
+import io
+import textwrap
 
-# Title
+# -------------------------------
+# Title & Picture
+# -------------------------------
 st.title("Raj Singh - Sr. HSE Manager")
 
+if os.path.exists("profile.jpg"):
+    st.image("profile.jpg", width=200)
+else:
+    st.warning("Profile picture not found. Please add 'profile.jpg'")
+
+# -------------------------------
 # Contact Info
+# -------------------------------
 st.write("📧 Raj.singh.hse@gmail.com")
 st.write("📱 +91 9883122847")
 
-# Skills Section
+# -------------------------------
+# Skills
+# -------------------------------
 st.header("Skills")
-skills = [
-    "Effective implementation of JSA, HIRA, SIMOPS, PTW systems",
-    "Contractor HSE evaluation, onboarding, monitoring, stop-work authority",
-    "Incident investigation, root cause analysis, lesson sharing",
-    "Compliance with waste management, emissions, biodiversity, land use",
-    "Leading & lagging HSE indicators tracking",
-    "HSE dashboards, trend analysis, safety maturity assessments",
-    "Authority to stop unsafe work & escalate risks",
-    "ISO 45001, ISO 14001, ISO 9001 compliance",
-    "Digital HSE initiatives (dashboards, predictive analytics)",
-    "Leadership safety programs"
-]
-for skill in skills:
+for skill in data.skills:
     st.markdown(f"- {skill}")
 
+# -------------------------------
 # Achievements
+# -------------------------------
 st.header("Key Achievements")
-st.subheader("Technip Energies")
-st.write("✅ 34M Safe Man Hours (HURL Barauni, Bihar)")
-st.write("✅ 22M Safe Man Hours (HRRL Barmer, Rajasthan)")
-st.write("✅ AI Vision Cameras for HSE monitoring")
-st.write("✅ Digital BBS program implementation")
+for company, items in data.achievements.items():
+    st.subheader(company)
+    for item in items:
+        st.write(f"✅ {item}")
 
-st.subheader("Larsen & Toubro")
-st.write("✅ SLD risk assessment methodology")
-st.write("✅ HSE Knowledge retention program")
-
-st.subheader("TATA Projects Limited")
-st.write("✅ KRA for execution team")
-st.write("✅ Leadership Engagement Sponsorship program")
-
+# -------------------------------
 # Education
+# -------------------------------
 st.header("Education")
-st.write("🎓 B.Tech Mechanical Engineering - Dr MGR Educational & Research Institute")
-st.write("🎓 M.Tech Industrial Safety Engineering - RGPV State Technical University")
+for edu in data.education:
+    st.write(f"🎓 {edu}")
 
+# -------------------------------
 # Certifications
+# -------------------------------
 st.header("Certifications")
-certs = [
-    "IOSH Managing Safely",
-    "ISO 45001:2018 Internal Auditor",
-    "NEBOSH IGC & Diploma DI1",
-    "Industrial Safety Engineering (IIT Kharagpur - NPTEL)"
-]
-for cert in certs:
+for cert in data.certifications:
     st.markdown(f"- {cert}")
 
+# -------------------------------
 # Experience
+# -------------------------------
 st.header("Professional Experience")
-st.write("**Technip Energies India Limited** - Sr. Manager HSE (2019 - Present)")
-st.write("**Tata Projects Limited** - Dy. Manager HSE (2016 - 2019)")
-st.write("**Larsen & Toubro Limited** - Sr. HSE Engineer (2015 - 2016)")
-st.write("**Ask EHS (Reliance Industries)** - Safety Engineer (2014 - 2015)")
-st.write("**Lloyd Insulation Limited** - Safety Officer (2013 - 2014)")
-st.write("**Johnson Pvt Ltd** - Safety Officer (2013)")
-st.write("**Shreeji Asia Pvt Ltd** - Safety Officer (2012 - 2013)")
-st.write("**Anand Engineering & Construction** - Mechanical Erection Engineer (2010 - 2012)")
+for exp in data.experience:
+    st.subheader(f"{exp['role']} - {exp['company']}")
+    for point in exp["details"]:
+        st.write(f"• {point}")
+
+# -------------------------------
+# PDF Export Function
+# -------------------------------
+def create_pdf():
+    pdf = FPDF()
+
+    # Use Windows Arial Unicode
+    font_path = "C:/Windows/Fonts/arial.ttf"
+    pdf.add_font("ArialUnicode", "", font_path, uni=True)
+
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=10)
+    pdf.set_font("ArialUnicode", "", 12)
+
+    # margins
+    pdf.set_left_margin(10)
+    pdf.set_right_margin(10)
+
+    page_width = pdf.w - pdf.l_margin - pdf.r_margin
+
+    # Title
+    pdf.set_font("ArialUnicode", "", 14)
+    pdf.cell(page_width, 10, "Raj Singh - Sr. HSE Manager", ln=1, align="C")
+
+    pdf.set_font("ArialUnicode", "", 11)
+    pdf.cell(page_width, 8, "Contact: Raj.singh.hse@gmail.com | +91 9883122847", ln=1)
+    pdf.ln(4)
+
+    # -------- Skills --------
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(page_width, 8, "Skills:", ln=1)
+
+    for skill in data.skills:
+        pdf.set_x(pdf.l_margin)
+        wrapped = "\n".join(textwrap.wrap(skill, 85))
+        pdf.multi_cell(page_width, 7, f"- {wrapped}")
+    pdf.ln(2)
+
+    # -------- Achievements --------
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(page_width, 8, "Achievements:", ln=1)
+
+    for company, items in data.achievements.items():
+        pdf.set_x(pdf.l_margin)
+        pdf.cell(page_width, 7, company, ln=1)
+
+        for item in items:
+            pdf.set_x(pdf.l_margin)
+            wrapped = "\n".join(textwrap.wrap(item, 85))
+            pdf.multi_cell(page_width, 7, f"- {wrapped}")
+    pdf.ln(2)
+
+    # -------- Education --------
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(page_width, 8, "Education:", ln=1)
+
+    for edu in data.education:
+        pdf.set_x(pdf.l_margin)
+        wrapped = "\n".join(textwrap.wrap(edu, 85))
+        pdf.multi_cell(page_width, 7, f"- {wrapped}")
+    pdf.ln(2)
+
+    # -------- Certifications --------
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(page_width, 8, "Certifications:", ln=1)
+
+    for cert in data.certifications:
+        pdf.set_x(pdf.l_margin)
+        wrapped = "\n".join(textwrap.wrap(cert, 85))
+        pdf.multi_cell(page_width, 7, f"- {wrapped}")
+    pdf.ln(2)
+
+    # -------- Experience --------
+    pdf.set_x(pdf.l_margin)
+    pdf.cell(page_width, 8, "Experience:", ln=1)
+
+    for exp in data.experience:
+        company = exp.get("company", "")
+        role = exp.get("role", "")
+        details = exp.get("details", [])
+
+        pdf.set_x(pdf.l_margin)
+        pdf.multi_cell(page_width, 7, f"{role} - {company}")
+
+        for point in details:
+            pdf.set_x(pdf.l_margin)
+            wrapped = "\n".join(textwrap.wrap(point, 85))
+            pdf.multi_cell(page_width, 7, f"- {wrapped}")
+
+        pdf.ln(1)
+
+    # Output safely
+    pdf_out = pdf.output(dest="S")
+
+    if isinstance(pdf_out, str):
+        return pdf_out.encode("latin-1")
+    else:
+        return bytes(pdf_out)
+
+
+# -------------------------------
+# Word Export Function
+# -------------------------------
+def create_word():
+    doc = Document()
+
+    doc.add_heading("Raj Singh - Sr. HSE Manager", 0)
+    doc.add_paragraph("Contact: Raj.singh.hse@gmail.com | +91 9883122847")
+
+    doc.add_heading("Skills", 1)
+    for skill in data.skills:
+        doc.add_paragraph(skill, style="List Bullet")
+
+    doc.add_heading("Achievements", 1)
+    for company, items in data.achievements.items():
+        doc.add_heading(company, 2)
+        for item in items:
+            doc.add_paragraph(item, style="List Bullet")
+
+    doc.add_heading("Education", 1)
+    for edu in data.education:
+        doc.add_paragraph(edu, style="List Bullet")
+
+    doc.add_heading("Certifications", 1)
+    for cert in data.certifications:
+        doc.add_paragraph(cert, style="List Bullet")
+
+    doc.add_heading("Experience", 1)
+    for exp in data.experience:
+        company = exp.get("company", "")
+        role = exp.get("role", "")
+        details = exp.get("details", [])
+
+        doc.add_paragraph(f"{role} - {company}", style="List Bullet")
+        for point in details:
+            doc.add_paragraph(point, style="List Bullet 2")
+
+    bio = io.BytesIO()
+    doc.save(bio)
+    return bio.getvalue()
+
+
+# -------------------------------
+# Download Buttons
+# -------------------------------
+st.write("---")
+
+pdf_data = create_pdf()
+st.download_button("📄 Download Profile as PDF", pdf_data, "Raj_Singh_Profile.pdf")
+
+word_data = create_word()
+st.download_button("📝 Download Profile as Word", word_data, "Raj_Singh_Profile.docx")

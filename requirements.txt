@@ -10,3 +10,4 @@ pdfminer.six
 data
 pandas
 numpy
+fpdf2
