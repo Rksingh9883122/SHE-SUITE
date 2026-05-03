@@ -1,11 +1,3 @@
-st.set_page_config(
-    page_title="HSE SUITE",
-    page_icon="📄",
-    layout="wide"
-)
-
-
-
 import streamlit as st
 from fpdf import FPDF
 from docx import Document
