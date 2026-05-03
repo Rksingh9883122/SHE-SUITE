@@ -1,3 +1,11 @@
+st.set_page_config(
+    page_title="HSE SUITE",
+    page_icon="📄",
+    layout="wide"
+)
+
+
+
 import streamlit as st
 from fpdf import FPDF
 from docx import Document
@@ -213,3 +221,12 @@ st.download_button("📄 Download Profile as PDF", pdf_data, "Raj_Singh_Profile.
 
 word_data = create_word()
 st.download_button("📝 Download Profile as Word", word_data, "Raj_Singh_Profile.docx")
+
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
