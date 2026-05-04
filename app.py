@@ -8,217 +8,241 @@ import io
 import textwrap
 
 # -------------------------------
-# Title & Picture
+# PAGE CONFIG
 # -------------------------------
-st.title("Raj Singh - Sr. HSE Manager")
+st.set_page_config(layout="wide")
 
-if os.path.exists("profile.jpg"):
-    st.image("profile.jpg", width=200)
-else:
-    st.warning("Profile picture not found. Please add 'profile.jpg'")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # -------------------------------
-# Contact Info
+# TEXT CLEANER
 # -------------------------------
-st.write("📧 Raj.singh.hse@gmail.com")
-st.write("📱 +91 9883122847")
+def clean_text(text):
+    if not isinstance(text, str):
+        text = str(text)
+
+    for k, v in {
+        "–": "-",
+        "—": "-",
+        "’": "'",
+        "“": '"',
+        "”": '"',
+        "•": "-",
+        "✓": "-",
+        "✅": "-"
+    }.items():
+        text = text.replace(k, v)
+
+    return text.encode("latin-1", "ignore").decode("latin-1")
 
 # -------------------------------
-# Skills
+# UI STYLE
+# -------------------------------
+st.markdown("""
+<style>
+.stApp { background-color: #F4F8FB; max-width:1000px; margin:auto; }
+
+.header-bar {
+    background-color: #0072CE;
+    padding: 20px;
+    border-radius: 10px;
+    color: white;
+}
+
+h2 {
+    color: #0072CE;
+    border-bottom: 2px solid #0072CE;
+}
+
+p, div {
+    font-size: 15px;
+    line-height: 1.6;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# -------------------------------
+# HEADER
+# -------------------------------
+st.markdown("""
+<div class="header-bar">
+<h1>Raj Singh</h1>
+<p><b>Senior HSE Manager</b></p>
+<p>Raj.singh.hse@gmail.com | +91 9883122847</p>
+</div>
+""", unsafe_allow_html=True)
+
+# IMAGE
+img_path = os.path.join(BASE_DIR, "profile.jpg")
+if os.path.exists(img_path):
+    st.image(img_path, width=180)
+
+# -------------------------------
+# CONTENT
 # -------------------------------
 st.header("Skills")
-for skill in data.skills:
-    st.markdown(f"- {skill}")
+for s in data.skills:
+    st.markdown(f"- {s}")
 
-# -------------------------------
-# Achievements
-# -------------------------------
-st.header("Key Achievements")
-for company, items in data.achievements.items():
-    st.subheader(company)
-    for item in items:
-        st.write(f"✅ {item}")
-
-# -------------------------------
-# Education
-# -------------------------------
-st.header("Education")
-for edu in data.education:
-    st.write(f"🎓 {edu}")
-
-# -------------------------------
-# Certifications
-# -------------------------------
-st.header("Certifications")
-for cert in data.certifications:
-    st.markdown(f"- {cert}")
-
-# -------------------------------
-# Experience
-# -------------------------------
 st.header("Professional Experience")
 for exp in data.experience:
-    st.subheader(f"{exp['role']} - {exp['company']}")
-    for point in exp["details"]:
-        st.write(f"• {point}")
+    st.subheader(f"{exp['role']} — {exp['company']}")
+    for d in exp["details"]:
+        st.markdown(f"- {d}")
+
+st.header("Key Achievements")
+for c, items in data.achievements.items():
+    st.subheader(c)
+    for i in items:
+        st.markdown(f"- {i}")
+
+st.header("Education")
+for e in data.education:
+    st.markdown(f"- {e}")
+
+st.header("Certifications")
+for c in data.certifications:
+    st.markdown(f"- {c}")
 
 # -------------------------------
-# PDF Export Function
+# ✅ FINAL FIXED PDF FUNCTION
 # -------------------------------
 def create_pdf():
     pdf = FPDF()
-
-    # Use Windows Arial Unicode
-    font_path = "C:/Windows/Fonts/arial.ttf"
-    pdf.add_font("ArialUnicode", "", font_path, uni=True)
-
     pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=10)
-    pdf.set_font("ArialUnicode", "", 12)
+    pdf.set_auto_page_break(True, 10)
 
-    # margins
+    # FIXED margins
     pdf.set_left_margin(10)
     pdf.set_right_margin(10)
 
+    BLUE = (0, 114, 206)
+    BLACK = (0, 0, 0)
+
+    # Full usable width
     page_width = pdf.w - pdf.l_margin - pdf.r_margin
 
-    # Title
-    pdf.set_font("ArialUnicode", "", 14)
-    pdf.cell(page_width, 10, "Raj Singh - Sr. HSE Manager", ln=1, align="C")
+    # HEADER BAR
+    pdf.set_fill_color(*BLUE)
+    pdf.rect(0, 0, pdf.w, 25, style='F')
 
-    pdf.set_font("ArialUnicode", "", 11)
-    pdf.cell(page_width, 8, "Contact: Raj.singh.hse@gmail.com | +91 9883122847", ln=1)
-    pdf.ln(4)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Arial", "B", 16)
+    pdf.set_xy(10, 10)
+    pdf.cell(0, 5, "Raj Singh - Senior HSE Manager")
 
-    # -------- Skills --------
-    pdf.set_x(pdf.l_margin)
-    pdf.cell(page_width, 8, "Skills:", ln=1)
+    pdf.set_font("Arial", "", 10)
+    pdf.set_xy(10, 18)
+    pdf.cell(0, 5, "Raj.singh.hse@gmail.com | +91 9883122847")
 
-    for skill in data.skills:
+    pdf.ln(20)
+
+    # ✅ SECTION FUNCTION (ALIGNMENT FIXED)
+    def section(title, items):
+        pdf.set_text_color(*BLUE)
+        pdf.set_font("Arial", "B", 13)
+
         pdf.set_x(pdf.l_margin)
-        wrapped = "\n".join(textwrap.wrap(skill, 85))
-        pdf.multi_cell(page_width, 7, f"- {wrapped}")
-    pdf.ln(2)
+        pdf.multi_cell(page_width, 8, clean_text(title))
 
-    # -------- Achievements --------
-    pdf.set_x(pdf.l_margin)
-    pdf.cell(page_width, 8, "Achievements:", ln=1)
+        pdf.set_draw_color(*BLUE)
+        pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
 
-    for company, items in data.achievements.items():
-        pdf.set_x(pdf.l_margin)
-        pdf.cell(page_width, 7, company, ln=1)
+        pdf.ln(3)
+
+        pdf.set_text_color(*BLACK)
+        pdf.set_font("Arial", "", 11)
 
         for item in items:
-            pdf.set_x(pdf.l_margin)
-            wrapped = "\n".join(textwrap.wrap(item, 85))
-            pdf.multi_cell(page_width, 7, f"- {wrapped}")
-    pdf.ln(2)
+            pdf.set_x(pdf.l_margin)  # ✅ force left alignment
+            text = clean_text(item)
 
-    # -------- Education --------
+            wrapped = textwrap.wrap(text, 90)
+
+            for line in wrapped:
+                pdf.multi_cell(page_width, 6, "- " + line)
+
+        pdf.ln(2)
+
+    # CALLS
+    section("Skills", data.skills)
+    section("Education", data.education)
+    section("Certifications", data.certifications)
+
+    # ✅ EXPERIENCE FIXED
+    pdf.set_text_color(*BLUE)
+    pdf.set_font("Arial", "B", 13)
+
     pdf.set_x(pdf.l_margin)
-    pdf.cell(page_width, 8, "Education:", ln=1)
+    pdf.multi_cell(page_width, 8, "Experience")
 
-    for edu in data.education:
-        pdf.set_x(pdf.l_margin)
-        wrapped = "\n".join(textwrap.wrap(edu, 85))
-        pdf.multi_cell(page_width, 7, f"- {wrapped}")
-    pdf.ln(2)
+    pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
+    pdf.ln(3)
 
-    # -------- Certifications --------
-    pdf.set_x(pdf.l_margin)
-    pdf.cell(page_width, 8, "Certifications:", ln=1)
-
-    for cert in data.certifications:
-        pdf.set_x(pdf.l_margin)
-        wrapped = "\n".join(textwrap.wrap(cert, 85))
-        pdf.multi_cell(page_width, 7, f"- {wrapped}")
-    pdf.ln(2)
-
-    # -------- Experience --------
-    pdf.set_x(pdf.l_margin)
-    pdf.cell(page_width, 8, "Experience:", ln=1)
+    pdf.set_text_color(*BLACK)
 
     for exp in data.experience:
-        company = exp.get("company", "")
-        role = exp.get("role", "")
-        details = exp.get("details", [])
+        pdf.set_font("Arial", "B", 11)
 
         pdf.set_x(pdf.l_margin)
-        pdf.multi_cell(page_width, 7, f"{role} - {company}")
+        header = clean_text(f"{exp.get('role')} - {exp.get('company')}")
+        pdf.multi_cell(page_width, 7, header)
 
-        for point in details:
+        pdf.set_font("Arial", "", 11)
+
+        for d in exp.get("details", []):
             pdf.set_x(pdf.l_margin)
-            wrapped = "\n".join(textwrap.wrap(point, 85))
-            pdf.multi_cell(page_width, 7, f"- {wrapped}")
+            text = clean_text(d)
 
-        pdf.ln(1)
+            wrapped = textwrap.wrap(text, 90)
 
-    # Output safely
-    pdf_out = pdf.output(dest="S")
+            for line in wrapped:
+                pdf.multi_cell(page_width, 6, "- " + line)
 
-    if isinstance(pdf_out, str):
-        return pdf_out.encode("latin-1")
-    else:
-        return bytes(pdf_out)
+        pdf.ln(2)
+
+    # ✅ ACHIEVEMENTS
+    section("Achievements", [
+        f"{c}: {i}" for c, items in data.achievements.items() for i in items
+    ])
+
+    return bytes(pdf.output())
 
 # -------------------------------
-# Word Export Function
+# WORD EXPORT
 # -------------------------------
 def create_word():
     doc = Document()
 
-    doc.add_heading("Raj Singh - Sr. HSE Manager", 0)
-    doc.add_paragraph("Contact: Raj.singh.hse@gmail.com | +91 9883122847")
+    doc.add_heading("Raj Singh - Senior HSE Manager", 0)
+    doc.add_paragraph("Raj.singh.hse@gmail.com | +91 9883122847")
 
-    doc.add_heading("Skills", 1)
-    for skill in data.skills:
-        doc.add_paragraph(skill, style="List Bullet")
-
-    doc.add_heading("Achievements", 1)
-    for company, items in data.achievements.items():
-        doc.add_heading(company, 2)
-        for item in items:
-            doc.add_paragraph(item, style="List Bullet")
-
-    doc.add_heading("Education", 1)
-    for edu in data.education:
-        doc.add_paragraph(edu, style="List Bullet")
-
-    doc.add_heading("Certifications", 1)
-    for cert in data.certifications:
-        doc.add_paragraph(cert, style="List Bullet")
+    for section, content in {
+        "Skills": data.skills,
+        "Education": data.education,
+        "Certifications": data.certifications
+    }.items():
+        doc.add_heading(section, 1)
+        for item in content:
+            doc.add_paragraph(str(item), style="List Bullet")
 
     doc.add_heading("Experience", 1)
     for exp in data.experience:
-        company = exp.get("company", "")
-        role = exp.get("role", "")
-        details = exp.get("details", [])
-
-        doc.add_paragraph(f"{role} - {company}", style="List Bullet")
-        for point in details:
-            doc.add_paragraph(point, style="List Bullet 2")
+        doc.add_paragraph(f"{exp['role']} - {exp['company']}", style="List Bullet")
+        for d in exp["details"]:
+            doc.add_paragraph(str(d), style="List Bullet 2")
 
     bio = io.BytesIO()
     doc.save(bio)
     return bio.getvalue()
 
 # -------------------------------
-# Download Buttons
+# DOWNLOAD
 # -------------------------------
 st.write("---")
 
 pdf_data = create_pdf()
-st.download_button("📄 Download Profile as PDF", pdf_data, "Raj_Singh_Profile.pdf")
+st.download_button("📄 Download Premium PDF", pdf_data, "Raj_Singh_Premium.pdf")
 
 word_data = create_word()
-st.download_button("📝 Download Profile as Word", word_data, "Raj_Singh_Profile.docx")
-
-hide_streamlit_style = """
-    <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
+st.download_button("📝 Download Word", word_data, "Raj_Singh_Profile.docx")
