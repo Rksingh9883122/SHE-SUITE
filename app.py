@@ -1,5 +1,6 @@
 import streamlit as st
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 from docx import Document
 import data
 import os
@@ -160,7 +161,6 @@ def create_pdf():
     else:
         return bytes(pdf_out)
 
-
 # -------------------------------
 # Word Export Function
 # -------------------------------
@@ -202,7 +202,6 @@ def create_word():
     doc.save(bio)
     return bio.getvalue()
 
-
 # -------------------------------
 # Download Buttons
 # -------------------------------
@@ -222,3 +221,4 @@ hide_streamlit_style = """
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
